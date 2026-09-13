@@ -1,6 +1,6 @@
 # Velo Climb
 
-A SuuntoPlus feature app for cycling that displays live climbing metrics and adds climb statistics to the workout summary.
+A SuuntoPlus feature app for cycling that displays live climbing metrics, an animated climb-category gauge, live heart rate, and adds climb statistics to the workout summary.
 
 ## Current features
 
@@ -9,7 +9,9 @@ A SuuntoPlus feature app for cycling that displays live climbing metrics and add
 - Maximum smoothed gradient for the current session.
 - Total ascent from Suunto altitude data.
 - Running average gradient from valid moving samples.
-- Six climb categories from Flat through HC+.
+- Eight climb categories from Descent through HC+.
+- An animated 8-segment corona gauge with a needle pointing at the current climb category.
+- Live heart rate reading on the climb screen.
 - Two watch screens that can be switched with the watch buttons.
 - Workout summary outputs for VAM, average gradient, and maximum gradient.
 
@@ -27,6 +29,7 @@ The templates also read these platform resources directly:
 
 - `Fusion/Altitude/AscentTime` for climb duration.
 - `Navigation/Routes/NavigatedRoute/RemainAscent` for remaining route ascent.
+- `Activity/Move/-1/Heartrate/Current` for the live heart rate reading on the climb screen.
 
 ## Calculations
 
@@ -54,17 +57,20 @@ The output uses Suunto's `VerticalSpeedMountain_Fourdigits` format. Despite the 
 
 ## Climb categories
 
-Categories are based on the smoothed gradient. Negative gradients are currently included in `Flat`; there is no separate descent category.
+Categories are based on the smoothed gradient, including a dedicated category for descents.
 
 | Output value | Gradient | Label | Color |
 |--------------|----------|-------|-------|
-| `0` | `< 2%` | Flat | Default |
-| `1` | `2%` to `< 5%` | Cat4 | Green |
-| `2` | `5%` to `< 7%` | Cat3 | Blue |
-| `3` | `7%` to `< 8%` | Cat2 | Yellow |
-| `4` | `8%` to `< 10%` | Cat1 | Orange |
-| `5` | `10%` to `< 12%` | HC | Red |
-| `6` | `>= 12%` | HC+ | Dark red |
+| `0` | `< 0%` | Descent | Blue |
+| `1` | `0%` to `< 2%` | Flat | Gray |
+| `2` | `2%` to `< 5%` | Cat4 | Green |
+| `3` | `5%` to `< 7%` | Cat3 | Blue |
+| `4` | `7%` to `< 8%` | Cat2 | Yellow |
+| `5` | `8%` to `< 10%` | Cat1 | Orange |
+| `6` | `10%` to `< 12%` | HC | Red |
+| `7` | `>= 12%` | HC+ | Dark red |
+
+On the climb screen, the current category also drives an animated corona gauge: an 8-segment ring drawn on a full-screen canvas, with a needle pointing at the active segment and the active segment highlighted in its category color. The gauge redraws whenever the category output changes.
 
 ## Watch screens
 
@@ -74,9 +80,10 @@ Displays:
 
 - Current gradient, formatted as a percentage.
 - Current rolling VAM.
+- Live heart rate.
 - Maximum gradient.
 - Total ascent.
-- Current category label with its category color.
+- Current category label with its category color, plus the animated corona gauge and needle described above.
 - Separate large-display and small/medium-display layouts.
 
 Pressing the watch's lower/down button sends an app event and switches to `t2.html`.
@@ -108,9 +115,9 @@ The altitude-profile graph markup is present in the file but currently commented
 
 - `manifest.json` - App metadata, declared telemetry inputs and outputs, registered templates, and workout usage.
 - `main.js` - State initialization, gradient and VAM calculations, category classification, screen switching, and summary outputs.
-- `t.html` - Climb screen template.
+- `t.html` - Climb screen template, including the corona gauge canvas drawing logic.
 - `t2.html` - Profile screen template.
-- `cyclin01-l.fea`, `cyclin01-m.fea`, `cyclin01-n.fea`, `cyclin01-o.fea`, `cyclin01-q.fea`, `cyclin01-s.fea` - Compiled ZIP-based Suunto resources for the supported device/display variants.
+- `cyclin01-l.fea`, `cyclin01-m.fea`, `cyclin01-n.fea`, `cyclin01-o.fea`, `cyclin01-q.fea`, `cyclin01-s.fea` - Compiled ZIP-based Suunto resources for the supported device/display variants (gitignored build output, not checked in).
 - `LICENSE` - GPL-2.0 license text.
 
 There is currently no package manager configuration, build script, automated test suite, or simulator configuration in this repository.

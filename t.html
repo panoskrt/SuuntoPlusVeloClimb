@@ -1,9 +1,80 @@
 <uiView
-  onLoad="var categorySubscription;"
+onLoad="
+    var categorySubscription;
+    var g = typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : Function('return this')());
+    g.g = g;
 
+    g.category = 0; // Default to flat
+
+    g.drawClimbingUI = function(ctx) {
+      var cx = ctx.width / 2;
+      var cy = ctx.width / 2;
+      
+      // Gauge segments based on the current climbingCategory
+      var climbingCategory = Number(g.category) || 0;
+
+      // Manual 7-segment corona drawing
+      var minValue = 0;
+      var maxValue = 7;
+
+      var startAngle = 3 * Math.PI / 4;
+      var endAngle = 9 * Math.PI / 4;
+      var totalAngle = endAngle - startAngle;
+      var segmentAngle = totalAngle / maxValue;
+      var gap = 0.06;
+      var zColors = ['#DED943', '#005E1F', '#003DB8', '#AD9207', '#995D03', '#BD0202', '#800000'];
+      
+      ctx.lineCap = 'butt';
+      for (var i = 0; i < maxValue; i++) {
+        var sA = startAngle + i * segmentAngle + gap/2;
+        var eA = startAngle + (i+1) * segmentAngle - gap/2;
+        var isActive = (climbingCategory === i + 1);
+        ctx.lineWidth = isActive ? 8 : 4;
+        ctx.strokeStyle = isActive ? zColors[i] : '#666666';
+        ctx.beginPath();
+        ctx.arc(cx, cy, (ctx.width - ctx.lineWidth) / 2 - 2, sA, eA, false);
+        ctx.stroke(); 
+      }
+
+      // Needle pointing to the current climbingCategory
+      if (climbingCategory >= minValue && climbingCategory <= maxValue) {
+        var nStart = 3 * Math.PI / 4;
+        var nTotal = (9 * Math.PI / 4) - nStart;
+        var nSeg = nTotal / maxValue;
+        // Point exactly to the middle of the active climbingCategory
+        var angle = nStart;
+        if (climbingCategory > 0) {
+          angle += (climbingCategory - 1) * nSeg + (nSeg / 2);
+        }
+        
+        var rb = ctx.width / 2 - 2;  // Base of needle
+        var rt = ctx.width / 2 - 20; // Tip of needle
+        var bHalf = 0.055;
+
+        var xTip = cx + rt * Math.cos(angle);
+        var yTip = cy + rt * Math.sin(angle);
+        var xBase1 = cx + rb * Math.cos(angle - bHalf);
+        var yBase1 = cy + rb * Math.sin(angle - bHalf);
+        var xBase2 = cx + rb * Math.cos(angle + bHalf);
+        var yBase2 = cy + rb * Math.sin(angle + bHalf);
+
+        ctx.beginPath();
+        ctx.moveTo(xTip, yTip);
+        ctx.lineTo(xBase1, yBase1);
+        ctx.lineTo(xBase2, yBase2);
+        ctx.closePath();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fill();
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    };
+  "
   onActivate="
     var categoryInfo = [
-      { text: 'Flat', color: '' },
+      { text: 'Descent', color: '#0000FF' },
+      { text: 'Flat', color: '#808080' }, 
       { text: 'Cat4', color: '#005E1F' },
       { text: 'Cat3', color: '#003DB8' },
       { text: 'Cat2', color: '#AD9207' },
@@ -16,6 +87,7 @@
       var info = categoryInfo[v] || categoryInfo[0];
       setText('#category-value', info.text);
       setStyle('#category-value', 'color', info.color);
+      g.category = Number(v) || 0;
     });
   "
   onDeactivate="$.unsubscribe(categorySubscription);">
@@ -23,12 +95,11 @@
   <div id="suuntoplus">
 
     <!-- Title and its background -->
-    <div class="cm-fg" style="width:100%;height:24%;">
-      <div class="sp-t-m p-hc" style="top:calc(50% - 40%e);">Velo Climb</div>
+    <div class="cm-fg" style="width:100%;height:18%;">
+      <div class="sp-t-m p-hc" style="top:calc(50% - 40%e);padding-top:10px;">Velo Climb</div>
     </div>
 
-    <!-- vertical separator -->
-    <div class="cm-fg p-hc" style="top:32%;width:2px;height:43%;opacity:0.4"></div>
+    <object type="canvas" id="climbGauge" style="position:absolute; top:0; left:0; width:100%; height:100%;" build="ctx => g.drawClimbingUI(ctx);" />
 
     <!-- Note!
       On large display icons are on the top of the value
@@ -59,7 +130,7 @@
     <!-- VAM -->
     <:if test="{APP_IS_DISPLAY_LARGE}">    
         <div class="f-ico" style="top:calc(35% - 100%e);left:calc(74% - 50%e)">&#xF261;</div>
-        <div class="sp-d-m f-num c-green" style="top:calc(41% - 50%e);left:calc(74% - 50%e)"  style="color:rgb(0, 187, 25);">
+        <div class="sp-d-m f-num c-green" style="top:calc(41% - 50%e);left:calc(74% - 50%e); color:rgb(0, 187, 25);">
           <eval input="/Zapp/{zapp_index}/Output/vam" outputFormat="VerticalSpeedMountain_Fourdigits" default="--"/>
         </div>
     </:if>
@@ -73,6 +144,11 @@
           </div>
         </div>   
     </:else>
+
+    <div class="f-ico" style="top:calc(45% - 50%e);left:calc(50% - 50%e);text-align:center;">&#xF101;</div>
+    <div class="f-l f-num" style="top:calc(53% - 50%e);left:calc(50% - 50%e);text-align:center;">
+      <eval input="/Activity/Move/-1/Heartrate/Current" outputFormat="HeartRate_Fourdigits" default="--"/>
+    </div>
 
     <!-- middle left -->
     <!-- Max gradient -->
@@ -118,11 +194,14 @@
       <span id="category-value" class="sp-t-l">--</span>
     </div>
 
+    <div style="top:0; left:0; width:0px; height:0px; position:absolute;">
+        <eval input="/Zapp/{zapp_index}/Output/category" outputFormat="script x => x" default="0" onValueChanged="g.category = Number(targetData) || 0; control('#climbGauge', 'REFRESH');" />
+    </div>
+
     <userInput>
       <!-- Switch view when lower button is pressed -->
       <pushButton name="down" onClick="$.put('/Zapp/{zapp_index}/Event', 2, null, 'int32');" />
     </userInput>
 
   </div>
-
 </uiView>
