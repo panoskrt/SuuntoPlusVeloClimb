@@ -2,7 +2,7 @@
   "name": "Velo Climb",
   "version": "1.0",
   "author": "Panagiotis Kritikakos - panoskrt@gmail.com",
-  "description": "Cycling targetted climbing app. Gradient info, ascent info, cycling climbing categorization.",
+  "description": "Cycling app displaying live climbing metrics, climb-category, live heart rate",
   "type": "feature",
   "usage": "workout",
   "modificationTime": 1784592000,
