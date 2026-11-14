@@ -2,6 +2,11 @@
 
 VeloClimb changes
 
+## 2026-11-14
+
+- Fixed the workout summary's `Avg VAM`: it showed the last 30-second rolling VAM at the end of the workout. It now shows a real session average (ascent gained while moving / seconds spent moving), published as a new `avgVam` output.
+- Guarded against a missing ascent input: total ascent and VAM no longer become undefined/NaN before `Fusion/Altitude/Ascent` resolves, and a missed sample no longer shortens the VAM window.
+
 ## 2026-09-12
 
 - Fixed the heart-rate icon on the climb screen not rendering on-device: it was declared as a `<span>` with absolute positioning, which the on-watch renderer doesn't support the way the browser-based emulator does. Changed to a `<div>`, matching every other positioned icon in the app.

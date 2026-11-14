@@ -6,6 +6,7 @@ A SuuntoPlus feature app for cycling that displays live climbing metrics, an ani
 
 - Smoothed live gradient based on vertical speed and ground speed.
 - Rolling 30-second VAM (vertical ascent rate).
+- Session-average VAM over moving time, for the workout summary.
 - Maximum smoothed gradient for the current session.
 - Total ascent from Suunto altitude data.
 - Running average gradient from valid moving samples.
@@ -23,7 +24,7 @@ The app declares three subscribed inputs in `manifest.json`:
 |-------|--------|-------|
 | `speed` | `Activity/Current/Speed` | Ground speed for gradient calculation |
 | `vSpeed` | `Fusion/Altitude/VerticalSpeed` | Vertical speed for gradient calculation |
-| `ascent` | `Fusion/Altitude/Ascent` | Total ascent and rolling VAM |
+| `ascent` | `Fusion/Altitude/Ascent` | Total ascent, rolling VAM and average VAM |
 
 The templates also read these platform resources directly:
 
@@ -53,7 +54,19 @@ The app tracks the maximum smoothed gradient and calculates average gradient as 
 VAM = (latest ascent - oldest ascent) / elapsed sample intervals
 ```
 
-The output uses Suunto's `VerticalSpeedMountain_Fourdigits` format. Despite the summary label `Avg VAM`, the value is the current rolling-window VAM rather than a whole-session average.
+The output uses Suunto's `VerticalSpeedMountain_Fourdigits` format.
+
+If the ascent input is not available yet, VAM stays at `0` and total ascent keeps its last known value (initially `0`). A missed ascent sample repeats the last known value, so the window still covers the right number of seconds.
+
+### Average VAM
+
+The workout summary's `Avg VAM` is a session average, published as the `avgVam` output:
+
+```text
+average VAM = ascent gained while moving / seconds spent moving
+```
+
+"Moving" uses the same `0.3 m/s` speed threshold as the gradient, so time spent stopped (and any barometer drift during it) does not affect the average.
 
 ## Climb categories
 
@@ -107,7 +120,7 @@ The altitude-profile graph markup is present in the file but currently commented
 
 | ID | Name | Format | Value |
 |----|------|--------|-------|
-| `vam` | Avg VAM | `VerticalSpeedMountain_Fourdigits` | Rolling VAM output |
+| `vam` | Avg VAM | `VerticalSpeedMountain_Fourdigits` | Session-average VAM over moving time (`avgVam` output) |
 | `gradient` | Avg gradient | `Percentage_Fourdigits` | Running average gradient |
 | `maxGradient` | Max gradient | `Percentage_Fourdigits` | Maximum smoothed gradient |
 

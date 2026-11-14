@@ -26,6 +26,9 @@ var maxgradient;
 var ascentHistory;
 var gradientSum;
 var gradientSamples;
+var lastAscent;
+var movingAscent;
+var movingSeconds;
 var currentTemplate;
 
 function onLoad(input, output) {
@@ -34,9 +37,13 @@ function onLoad(input, output) {
   ascentHistory = [];
   gradientSum = 0;
   gradientSamples = 0;
+  lastAscent = undefined;
+  movingAscent = 0;
+  movingSeconds = 0;
   currentTemplate = 't';
   output.gradient = 0;
   output.vam = 0;
+  output.avgVam = 0;
   output.category = 0;
   output.maxgradient = 0;
   output.totalAscent = 0;
@@ -72,16 +79,38 @@ function evaluate(input, output) {
 
   output.gradient = smoothedGradient;
   output.maxgradient = maxgradient;
-  output.totalAscent = input.ascent;
   output.avgGradient = gradientSamples > 0 ? gradientSum / gradientSamples : 0;
 
-  // VAM (m/s) = ascent gained over the last VAM_WINDOW_SECONDS, i.e. the slope of
-  // the ascent curve over that window rather than the whole-session average.
-  ascentHistory.push(input.ascent);
-  if (ascentHistory.length > VAM_WINDOW_SECONDS + 1) ascentHistory.shift();
-  output.vam = ascentHistory.length > 1
-    ? (input.ascent - ascentHistory[0]) / (ascentHistory.length - 1)
-    : 0;
+  // Ascent can be unresolved for a while (e.g. before the barometer/fusion has
+  // settled). Hold the last known value instead of letting undefined/NaN leak
+  // into the outputs and the VAM window.
+  var hasAscent = typeof input.ascent === 'number' && !isNaN(input.ascent);
+  if (hasAscent) {
+    // Session-average VAM only counts ascent gained while moving, so time spent
+    // stopped (and barometer drift during it) doesn't skew the summary value.
+    if (hasRealTelemetry && lastAscent !== undefined && input.ascent > lastAscent) {
+      movingAscent += input.ascent - lastAscent;
+    }
+    lastAscent = input.ascent;
+  }
+  if (hasRealTelemetry) movingSeconds++;
+  output.avgVam = movingSeconds > 0 ? movingAscent / movingSeconds : 0;
+
+  if (lastAscent === undefined) {
+    output.vam = 0;
+  } else {
+    output.totalAscent = lastAscent;
+
+    // VAM (m/s) = ascent gained over the last VAM_WINDOW_SECONDS, i.e. the slope of
+    // the ascent curve over that window rather than the whole-session average.
+    // A missed sample repeats the last known ascent so the window still spans
+    // the right number of seconds.
+    ascentHistory.push(lastAscent);
+    if (ascentHistory.length > VAM_WINDOW_SECONDS + 1) ascentHistory.shift();
+    output.vam = ascentHistory.length > 1
+      ? (lastAscent - ascentHistory[0]) / (ascentHistory.length - 1)
+      : 0;
+  }
 
   if (smoothedGradient < DESCENT) {
     output.category = 0; // Descent
@@ -132,7 +161,7 @@ function getSummaryOutputs(input, output) {
       id: 'vam',
       name: 'Avg VAM',
       format: 'VerticalSpeedMountain_Fourdigits',
-      value: output.vam
+      value: output.avgVam
     },
     {
       id: 'gradient',
