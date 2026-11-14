@@ -5,6 +5,7 @@ VeloClimb changes
 ## 2026-11-14
 
 - Fixed the workout summary's `Avg VAM`: it showed the last 30-second rolling VAM at the end of the workout. It now shows a real session average (ascent gained while moving / seconds spent moving), published as a new `avgVam` output.
+- Added heart rate zone colouring to the climb screen: the heart icon now changes colour with the user's heart rate zone (Zone 1-5, read from the zone limits set in the Suunto app), via a new `hrZone` output.
 - Guarded against a missing ascent input: total ascent and VAM no longer become undefined/NaN before `Fusion/Altitude/Ascent` resolves, and a missed sample no longer shortens the VAM window.
 
 ## 2026-09-12

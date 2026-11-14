@@ -12,19 +12,21 @@ A SuuntoPlus feature app for cycling that displays live climbing metrics, an ani
 - Running average gradient from valid moving samples.
 - Eight climb categories from Descent through HC+.
 - An animated 8-segment corona gauge with a needle pointing at the current climb category.
-- Live heart rate reading on the climb screen.
+- Live heart rate reading on the climb screen, with the heart icon coloured by the user's heart rate zone.
 - Two watch screens that can be switched with the watch buttons.
 - Workout summary outputs for VAM, average gradient, and maximum gradient.
 
 ## Telemetry inputs
 
-The app declares three subscribed inputs in `manifest.json`:
+The app declares these subscribed inputs in `manifest.json`:
 
 | Input | Source | Usage |
 |-------|--------|-------|
 | `speed` | `Activity/Current/Speed` | Ground speed for gradient calculation |
 | `vSpeed` | `Fusion/Altitude/VerticalSpeed` | Vertical speed for gradient calculation |
 | `ascent` | `Fusion/Altitude/Ascent` | Total ascent, rolling VAM and average VAM |
+| `hr` | `Activity/Move/-1/Heartrate/Current` | Heart rate for the heart rate zone |
+| `hrZone1`..`hrZone5` | `Activity/Zones/Heartrate/Zone1/Limit`..`Zone5/Limit` | The user's heart rate zone limits |
 
 The templates also read these platform resources directly:
 
@@ -84,6 +86,23 @@ Categories are based on the smoothed gradient, including a dedicated category fo
 | `7` | `>= 12%` | HC+ | Dark red |
 
 On the climb screen, the current category also drives an animated corona gauge: an 8-segment ring drawn on a full-screen canvas, with a needle pointing at the active segment and the active segment highlighted in its category color. The gauge redraws whenever the category output changes.
+
+## Heart rate zones
+
+`main.js` publishes the current heart rate zone as the `hrZone` output, and the climb screen colours the heart icon to match:
+
+| Output value | Meaning | Icon color |
+|--------------|---------|------------|
+| `0` | No zone: no heart rate yet, Zone 2-5 limits not available, or below a Zone 1 limit (when one is set) | White |
+| `1` | Zone 1 | Gray |
+| `2` | Zone 2 | Blue |
+| `3` | Zone 3 | Green |
+| `4` | Zone 4 | Orange |
+| `5` | Zone 5 | Red |
+
+The zone is the highest zone whose limit the heart rate has reached: each `ZoneN/Limit` is the lower boundary of zone N. Zone 1 normally has no lower limit (the platform reports it as undefined), in which case anything below the Zone 2 limit counts as Zone 1. Heart rate and limits are both reported in Hz; values are normalised to bpm (anything under 10 is treated as Hz) so the comparison also works if a limit arrives in bpm.
+
+This matches the SuuntoPlus simulator, which defaults to Zone 2-5 limits of about 139, 149, 158 and 168 bpm. Behaviour with the user's own zones still needs confirming on a watch.
 
 ## Watch screens
 

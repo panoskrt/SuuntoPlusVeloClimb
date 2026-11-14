@@ -21,6 +21,12 @@ var CLIMB_CAT1 = 10; // < 10%: hard - orange
 var CLIMB_HC = 12;   // < 12%: very hard - red
                      // >= 12%: HC+, very very hard - dark red
 
+// Heart rate zone inputs, in zone order (Zone1..Zone5). Each limit is read from
+// /Activity/Zones/Heartrate/ZoneN/Limit and is the lower boundary of that zone
+// ("Zone N starts at"). Zone 1 usually has no lower limit (it starts at 0), so
+// the platform reports it as undefined.
+var HR_ZONE_INPUTS = ['hrZone1', 'hrZone2', 'hrZone3', 'hrZone4', 'hrZone5'];
+
 var smoothedGradient;
 var maxgradient;
 var ascentHistory;
@@ -48,6 +54,7 @@ function onLoad(input, output) {
   output.maxgradient = 0;
   output.totalAscent = 0;
   output.avgGradient = 0;
+  output.hrZone = 0;
 }
 
 // Fired when the up/down button is pressed (see the <userInput> block in
@@ -129,6 +136,32 @@ function evaluate(input, output) {
   } else {
     output.category = 7; // HC+ - hardest
   }
+
+  // Heart rate zone, 1..5, or 0 when it can't be worked out (no heart rate
+  // yet, Zone 2-5 limits not available) or the heart rate is below a Zone 1
+  // limit, when one is set. Inlined because feature apps may only define the
+  // SDK callback functions (no global or nested helper functions).
+  //
+  // The SDK reports heart rate and zone limits in Hz. Both are normalised to
+  // bpm so the comparison also works if a limit arrives in bpm: no heart beats
+  // 10+ times a second, so anything at or above that must already be bpm.
+  var hrZone = 0;
+  var hr = input.hr;
+  if (typeof hr === 'number' && !isNaN(hr) && hr > 0) {
+    var bpm = hr < 10 ? hr * 60 : hr;
+    for (var i = 0; i < HR_ZONE_INPUTS.length; i++) {
+      var limit = input[HR_ZONE_INPUTS[i]];
+      if (typeof limit !== 'number' || isNaN(limit) || limit <= 0) {
+        // A missing Zone 1 limit means Zone 1 starts at 0.
+        if (i === 0) { hrZone = 1; continue; }
+        hrZone = 0;
+        break;
+      }
+      if (limit < 10) limit = limit * 60;
+      if (bpm >= limit) hrZone = i + 1;
+    }
+  }
+  output.hrZone = hrZone;
 }
 
 /* Other available callbacks:
