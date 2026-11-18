@@ -1,6 +1,7 @@
 <uiView
 onLoad="
     var categorySubscription;
+    var hrZoneSubscription;
     var g = typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : Function('return this')());
     g.g = g;
 
@@ -89,8 +90,15 @@ onLoad="
       setStyle('#category-value', 'color', info.color);
       g.category = Number(v) || 0;
     });
+
+    // Heart icon colour follows the heart rate zone worked out in main.js.
+    // Index 0 = no zone (no HR yet, zones not set, or below Zone 1).
+    var hrZoneColors = ['#FFFFFF', '#808080', '#0080FF', '#00BB19', '#FFA500', '#FF0000'];
+    hrZoneSubscription = $.subscribe('Zapp/{zapp_index}/Output/hrZone', function(v) {
+      setStyle('#hr-icon', 'color', hrZoneColors[Number(v)] || hrZoneColors[0]);
+    });
   "
-  onDeactivate="$.unsubscribe(categorySubscription);">
+  onDeactivate="$.unsubscribe(categorySubscription); $.unsubscribe(hrZoneSubscription);">
 
   <div id="suuntoplus">
 
@@ -145,7 +153,7 @@ onLoad="
         </div>   
     </:else>
 
-    <div class="f-ico" style="top:calc(45% - 50%e);left:calc(50% - 50%e);text-align:center;">&#xF101;</div>
+    <div id="hr-icon" class="f-ico" style="top:calc(45% - 50%e);left:calc(50% - 50%e);text-align:center;">&#xF101;</div>
     <div class="f-l f-num" style="top:calc(53% - 50%e);left:calc(50% - 50%e);text-align:center;">
       <eval input="/Activity/Move/-1/Heartrate/Current" outputFormat="HeartRate_Fourdigits" default="--"/>
     </div>
