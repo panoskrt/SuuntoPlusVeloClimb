@@ -20,6 +20,6 @@
     { "name": "totalAscent" },
     { "name": "avgGradient", "log": true }
   ],
-  "template": [{ "name": "t.html" }, { "name": "t2.html" }],
+  "template": [{ "name": "t.html" }, { "name": "t_p.html" }, { "name": "t2.html" }],
   "image": []
 }
