@@ -1,6 +1,6 @@
 {
   "name": "Velo Climb",
-  "version": "1.1",
+  "version": "1.2",
   "author": "Panagiotis Kritikakos - panoskrt@gmail.com",
   "description": "Cycling app displaying live climbing metrics, climb-category, live heart rate",
   "type": "feature",
@@ -20,6 +20,6 @@
     { "name": "totalAscent" },
     { "name": "avgGradient", "log": true }
   ],
-  "template": [{ "name": "t.html" }, { "name": "t2.html" }],
+  "template": [{ "name": "t.html" }, { "name": "t_p.html" }, { "name": "t2.html" }],
   "image": []
 }
