@@ -2,6 +2,10 @@
 
 VeloClimb changes
 
+## 2026-11-18
+
+- Fixed the down button on the climb screen while the exercise is paused: it switched to the profile screen instead of ending/saving the activity. The climb screen now releases the down button while paused (`t_p.html`) so the watch handles it.
+
 ## 2026-11-14
 
 - Fixed the workout summary's `Avg VAM`: it showed the last 30-second rolling VAM at the end of the workout. It now shows a real session average (ascent gained while moving / seconds spent moving), published as a new `avgVam` output.

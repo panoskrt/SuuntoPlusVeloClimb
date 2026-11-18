@@ -120,6 +120,8 @@ Displays:
 
 Pressing the watch's lower/down button sends an app event and switches to `t2.html`.
 
+While the exercise is paused the app shows `t_p.html` instead: the same screen without the down-button binding, so the down button keeps its system function (end/save the activity). Any layout change to `t.html` must be mirrored in `t_p.html`.
+
 ### `t2.html` - Profile screen
 
 Displays:
@@ -148,6 +150,7 @@ The altitude-profile graph markup is present in the file but currently commented
 - `manifest.json` - App metadata, declared telemetry inputs and outputs, registered templates, and workout usage.
 - `main.js` - State initialization, gradient and VAM calculations, category classification, screen switching, and summary outputs.
 - `t.html` - Climb screen template, including the corona gauge canvas drawing logic.
+- `t_p.html` - Copy of `t.html` without the down-button binding, shown while the exercise is paused.
 - `t2.html` - Profile screen template.
 - `cyclin01-l.fea`, `cyclin01-m.fea`, `cyclin01-n.fea`, `cyclin01-o.fea`, `cyclin01-q.fea`, `cyclin01-s.fea` - Compiled ZIP-based Suunto resources for the supported device/display variants (gitignored build output, not checked in).
 - `LICENSE` - GPL-2.0 license text.

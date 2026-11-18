@@ -36,6 +36,7 @@ var lastAscent;
 var movingAscent;
 var movingSeconds;
 var currentTemplate;
+var isPaused;
 
 function onLoad(input, output) {
   smoothedGradient = 0;
@@ -47,6 +48,7 @@ function onLoad(input, output) {
   movingAscent = 0;
   movingSeconds = 0;
   currentTemplate = 't';
+  isPaused = 0;
   output.gradient = 0;
   output.vam = 0;
   output.avgVam = 0;
@@ -166,25 +168,33 @@ function evaluate(input, output) {
 
 /* Other available callbacks:
 function onExerciseStart() {}    // Is evaluated on exercise start
-function onExercisePause() {}    // Is evaluated on exercise pause
-function onExerciseContinue() {} // Is evaluated when continuing exercise after pause
 function onLap() {}              // Is evaluated on every lap change
 function onAutoLap() {}          // Is evaluated on every autolap change
 function onInterval() {}         // Is evaluated on interval
 function onPoolLength() {}       // Is evaluated after each pool length (swimming)
 */
 
-//function onExercisePause(input, output) {
-  // TODO: Need to skip ascent calculation. Need to skip altitude graph
-  //return;
-//}
+// While the exercise is paused the Climb screen must not claim the down button:
+// the watch uses it to end/save the activity. A template's <userInput> can't be
+// toggled at runtime, so the screen is reloaded with t_p.html - a copy of t.html
+// without the down-button binding - and reloaded with t.html again on continue.
+// TODO: Need to skip ascent calculation. Need to skip altitude graph
+function onExercisePause(input, output) {
+  isPaused = 1;
+  if (currentTemplate === 't') unload('_cm');
+}
+
+function onExerciseContinue(input, output) {
+  isPaused = 0;
+  if (currentTemplate === 't') unload('_cm');
+}
 
 // Is evaluated when a user enters the SuuntoPlus sports app screen the first
 // time and when the screen is reloaded. Essentially defines what is shown on
 // the screen by returning the wanted HTML template.
 function getUserInterface() {
   return {
-    template: currentTemplate
+    template: currentTemplate === 't' && isPaused ? 't_p' : currentTemplate
   };
 }
 

@@ -27,6 +27,6 @@
     { "name": "avgGradient", "log": true },
     { "name": "hrZone" }
   ],
-  "template": [{ "name": "t.html" }, { "name": "t2.html" }],
+  "template": [{ "name": "t.html" }, { "name": "t_p.html" }, { "name": "t2.html" }],
   "image": []
 }
