@@ -1,7 +1,7 @@
 <uiView
 onLoad="
     var categorySubscription;
-    var hrZoneSubscription;
+    var hrSubscriptions;
     var g = typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : Function('return this')());
     g.g = g;
 
@@ -91,14 +91,54 @@ onLoad="
       g.category = Number(v) || 0;
     });
 
-    // Heart icon colour follows the heart rate zone worked out in main.js.
-    // Index 0 = no zone (no HR yet, zones not set, or below Zone 1).
+    // Heart icon colour follows the heart rate zone. Everything is subscribed
+    // here rather than as manifest inputs: with the heart rate and zone limits
+    // as manifest inputs the watch deactivated the whole app when no HR belt
+    // was paired (wrist HR), while a subscription that never delivers here
+    // just leaves its value at 0.
+    // Index 0 = no zone (no HR yet, zone limits not available, or below Zone 1).
     var hrZoneColors = ['#FFFFFF', '#808080', '#0080FF', '#00BB19', '#FFA500', '#FF0000'];
-    hrZoneSubscription = $.subscribe('Zapp/{zapp_index}/Output/hrZone', function(v) {
-      setStyle('#hr-icon', 'color', hrZoneColors[Number(v)] || hrZoneColors[0]);
-    });
+    var hrBpm = 0;
+    var hrLimits = [0, 0, 0, 0, 0]; // Zone 1-5 lower limits in bpm, 0 = not available
+
+    // Heart rate and limits come in Hz. Anything from 10 up must already be
+    // bpm: no heart beats 10+ times a second.
+    var hrToBpm = function(v) {
+      v = Number(v);
+      if (!(v > 0)) return 0;
+      return v < 10 ? v * 60 : v;
+    };
+
+    var hrUpdateIcon = function() {
+      var zone = 0;
+      var limits = hrLimits;
+      // Zone 1 normally has no lower limit (it starts at 0), so only Zone 2-5 are required.
+      var hasLimits = limits[1] > 0 && limits[2] > 0 && limits[3] > 0 && limits[4] > 0;
+      if (hrBpm > 0 && hasLimits && !(limits[0] > 0 && hrBpm < limits[0])) {
+        zone = 1;
+        for (var z = 1; z < 5; z++) {
+          if (hrBpm >= limits[z]) zone = z + 1;
+        }
+      }
+      setStyle('#hr-icon', 'color', hrZoneColors[zone]);
+    };
+
+    var hrSubscribeLimit = function(index) {
+      return $.subscribe('/Activity/Zones/Heartrate/Zone' + (index + 1) + '/Limit', function(v) {
+        hrLimits[index] = hrToBpm(v);
+        hrUpdateIcon();
+      });
+    };
+
+    hrSubscriptions = [
+      $.subscribe('/Activity/Move/-1/Heartrate/Current', function(v) {
+        hrBpm = hrToBpm(v);
+        hrUpdateIcon();
+      })
+    ];
+    for (var n = 0; n < 5; n++) hrSubscriptions.push(hrSubscribeLimit(n));
   "
-  onDeactivate="$.unsubscribe(categorySubscription); $.unsubscribe(hrZoneSubscription);">
+  onDeactivate="$.unsubscribe(categorySubscription); for (var u = 0; u < hrSubscriptions.length; u++) $.unsubscribe(hrSubscriptions[u]);">
 
   <div id="suuntoplus">
 

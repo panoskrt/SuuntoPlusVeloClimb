@@ -9,13 +9,7 @@
   "in": [
     { "name": "speed", "source": "Activity/Current/Speed", "type": "subscribe" },
     { "name": "vSpeed", "source": "Fusion/Altitude/VerticalSpeed", "type": "subscribe" },
-    { "name": "ascent", "source": "Fusion/Altitude/Ascent", "type": "subscribe" },
-    { "name": "hr", "source": "Activity/Move/-1/Heartrate/Current", "type": "subscribe" },
-    { "name": "hrZone1", "source": "Activity/Zones/Heartrate/Zone1/Limit", "type": "subscribe" },
-    { "name": "hrZone2", "source": "Activity/Zones/Heartrate/Zone2/Limit", "type": "subscribe" },
-    { "name": "hrZone3", "source": "Activity/Zones/Heartrate/Zone3/Limit", "type": "subscribe" },
-    { "name": "hrZone4", "source": "Activity/Zones/Heartrate/Zone4/Limit", "type": "subscribe" },
-    { "name": "hrZone5", "source": "Activity/Zones/Heartrate/Zone5/Limit", "type": "subscribe" }
+    { "name": "ascent", "source": "Fusion/Altitude/Ascent", "type": "subscribe" }
   ],
   "out": [
     { "name": "gradient", "log": true },
@@ -24,8 +18,7 @@
     { "name": "category" },
     { "name": "maxgradient", "log": true },
     { "name": "totalAscent" },
-    { "name": "avgGradient", "log": true },
-    { "name": "hrZone" }
+    { "name": "avgGradient", "log": true }
   ],
   "template": [{ "name": "t.html" }, { "name": "t_p.html" }, { "name": "t2.html" }],
   "image": []

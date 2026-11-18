@@ -4,6 +4,7 @@ VeloClimb changes
 
 ## 2026-11-18
 
+- Fixed the app being deactivated when no HR belt is paired (wrist HR): the heart rate and zone-limit manifest inputs and the `hrZone` output are gone, and the climb screen now works the heart rate zone out itself from the same resources.
 - Fixed the down button on the climb screen while the exercise is paused: it switched to the profile screen instead of ending/saving the activity. The climb screen now releases the down button while paused (`t_p.html`) so the watch handles it.
 
 ## 2026-11-14

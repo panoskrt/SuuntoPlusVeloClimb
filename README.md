@@ -25,14 +25,13 @@ The app declares these subscribed inputs in `manifest.json`:
 | `speed` | `Activity/Current/Speed` | Ground speed for gradient calculation |
 | `vSpeed` | `Fusion/Altitude/VerticalSpeed` | Vertical speed for gradient calculation |
 | `ascent` | `Fusion/Altitude/Ascent` | Total ascent, rolling VAM and average VAM |
-| `hr` | `Activity/Move/-1/Heartrate/Current` | Heart rate for the heart rate zone |
-| `hrZone1`..`hrZone5` | `Activity/Zones/Heartrate/Zone1/Limit`..`Zone5/Limit` | The user's heart rate zone limits |
 
 The templates also read these platform resources directly:
 
 - `Fusion/Altitude/AscentTime` for climb duration.
 - `Navigation/Routes/NavigatedRoute/RemainAscent` for remaining route ascent.
-- `Activity/Move/-1/Heartrate/Current` for the live heart rate reading on the climb screen.
+- `Activity/Move/-1/Heartrate/Current` for the live heart rate reading and the heart icon colour on the climb screen.
+- `Activity/Zones/Heartrate/Zone1/Limit`..`Zone5/Limit` for the heart icon colour.
 
 ## Calculations
 
@@ -89,20 +88,24 @@ On the climb screen, the current category also drives an animated corona gauge: 
 
 ## Heart rate zones
 
-`main.js` publishes the current heart rate zone as the `hrZone` output, and the climb screen colours the heart icon to match:
+The climb screen (`t.html` / `t_p.html`) colours the heart icon by heart rate zone:
 
-| Output value | Meaning | Icon color |
-|--------------|---------|------------|
-| `0` | No zone: no heart rate yet, Zone 2-5 limits not available, or below a Zone 1 limit (when one is set) | White |
-| `1` | Zone 1 | Gray |
-| `2` | Zone 2 | Blue |
-| `3` | Zone 3 | Green |
-| `4` | Zone 4 | Orange |
-| `5` | Zone 5 | Red |
+| Zone | Meaning | Icon colour |
+| --- | --- | --- |
+| none | No heart rate yet, zone limits not available, or below a Zone 1 limit (when one is set) | White |
+| 1 | Zone 1 | Gray |
+| 2 | Zone 2 | Blue |
+| 3 | Zone 3 | Green |
+| 4 | Zone 4 | Orange |
+| 5 | Zone 5 | Red |
 
-The zone is the highest zone whose limit the heart rate has reached: each `ZoneN/Limit` is the lower boundary of zone N. Zone 1 normally has no lower limit (the platform reports it as undefined), in which case anything below the Zone 2 limit counts as Zone 1. Heart rate and limits are both reported in Hz; values are normalised to bpm (anything under 10 is treated as Hz) so the comparison also works if a limit arrives in bpm.
+The zone is worked out in the template, not in `main.js`, and none of the heart rate resources are manifest inputs. With the heart rate and zone limits declared as manifest inputs, the watch deactivated the whole app when no HR belt was paired (wrist HR). The likely cause is a manifest input the watch could not supply in that setup; a template subscription that never delivers just leaves its value empty.
 
-This matches the SuuntoPlus simulator, which defaults to Zone 2-5 limits of about 139, 149, 158 and 168 bpm. Behaviour with the user's own zones still needs confirming on a watch.
+The limits are the user's zone limits, `Activity/Zones/Heartrate/ZoneN/Limit`. Each is the lower boundary of zone N; Zone 1 normally has none, so anything below the Zone 2 limit counts as Zone 1. If the Zone 2-5 limits are not all available the icon stays white.
+
+Heart rate and limits are normalised to bpm (anything under 10 is treated as Hz), so the comparison works whichever unit a value arrives in.
+
+The simulator defaults to Zone 2-5 limits of about 139, 149, 158 and 168 bpm. Behaviour on a watch, with an HR belt and with wrist HR, still needs confirming.
 
 ## Watch screens
 
