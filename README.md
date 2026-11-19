@@ -165,7 +165,7 @@ There is currently no package manager configuration, build script, automated tes
 ## App metadata
 
 - **Name:** Velo Climb
-- **Version:** 1.0
+- **Version:** 1.3
 - **Type:** SuuntoPlus feature app
 - **Usage:** Workout
 - **Author:** Panagiotis Kritikakos
