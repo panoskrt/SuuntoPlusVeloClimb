@@ -2,6 +2,10 @@
 
 VeloClimb changes
 
+## 2026-11-19
+
+- Heart icon zone colours now match the default Suunto heart rate zone gauge: cyan, green, yellow, orange, red for Zone 1-5 (was gray, blue, green, orange, red).
+
 ## 2026-11-18
 
 - Fixed the app being deactivated when no HR belt is paired (wrist HR): the heart rate and zone-limit manifest inputs and the `hrZone` output are gone, and the climb screen now works the heart rate zone out itself from the same resources.

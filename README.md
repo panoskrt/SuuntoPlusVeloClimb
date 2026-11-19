@@ -93,11 +93,13 @@ The climb screen (`t.html` / `t_p.html`) colours the heart icon by heart rate zo
 | Zone | Meaning | Icon colour |
 | --- | --- | --- |
 | none | No heart rate yet, zone limits not available, or below a Zone 1 limit (when one is set) | White |
-| 1 | Zone 1 | Gray |
-| 2 | Zone 2 | Blue |
-| 3 | Zone 3 | Green |
-| 4 | Zone 4 | Orange |
-| 5 | Zone 5 | Red |
+| 1 | Zone 1 | Cyan `#36E4FF` |
+| 2 | Zone 2 | Green `#6EE76D` |
+| 3 | Zone 3 | Yellow `#FFDD33` |
+| 4 | Zone 4 | Orange `#FF9F33` |
+| 5 | Zone 5 | Red `#FF5640` |
+
+The Zone 1-5 colours are the ones the default Suunto heart rate zone gauge uses (`<import src="#zone-g" />`).
 
 The zone is worked out in the template, not in `main.js`, and none of the heart rate resources are manifest inputs. With the heart rate and zone limits declared as manifest inputs, the watch deactivated the whole app when no HR belt was paired (wrist HR). The likely cause is a manifest input the watch could not supply in that setup; a template subscription that never delivers just leaves its value empty.
 

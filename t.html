@@ -97,7 +97,8 @@ onLoad="
     // was paired (wrist HR), while a subscription that never delivers here
     // just leaves its value at 0.
     // Index 0 = no zone (no HR yet, zone limits not available, or below Zone 1).
-    var hrZoneColors = ['#FFFFFF', '#808080', '#0080FF', '#00BB19', '#FFA500', '#FF0000'];
+    // Zone 1-5 match the watch's own zone gauge (buildGenericGauge, cmode on).
+    var hrZoneColors = ['#FFFFFF', '#36E4FF', '#6EE76D', '#FFDD33', '#FF9F33', '#FF5640'];
     var hrBpm = 0;
     var hrLimits = [0, 0, 0, 0, 0]; // Zone 1-5 lower limits in bpm, 0 = not available
 
