@@ -12,13 +12,13 @@ A SuuntoPlus feature app for cycling that displays live climbing metrics, an ani
 - Running average gradient from valid moving samples.
 - Eight climb categories from Descent through HC+.
 - An animated 8-segment corona gauge with a needle pointing at the current climb category.
-- Live heart rate reading on the climb screen.
+- Live heart rate reading on the climb screen, with the heart icon coloured by the user's heart rate zone.
 - Two watch screens that can be switched with the watch buttons.
 - Workout summary outputs for VAM, average gradient, and maximum gradient.
 
 ## Telemetry inputs
 
-The app declares three subscribed inputs in `manifest.json`:
+The app declares these subscribed inputs in `manifest.json`:
 
 | Input | Source | Usage |
 |-------|--------|-------|
@@ -30,7 +30,8 @@ The templates also read these platform resources directly:
 
 - `Fusion/Altitude/AscentTime` for climb duration.
 - `Navigation/Routes/NavigatedRoute/RemainAscent` for remaining route ascent.
-- `Activity/Move/-1/Heartrate/Current` for the live heart rate reading on the climb screen.
+- `Activity/Move/-1/Heartrate/Current` for the live heart rate reading and the heart icon colour on the climb screen.
+- `Activity/Zones/Heartrate/Zone1/Limit`..`Zone5/Limit` for the heart icon colour.
 
 ## Calculations
 
@@ -84,6 +85,29 @@ Categories are based on the smoothed gradient, including a dedicated category fo
 | `7` | `>= 12%` | HC+ | Dark red |
 
 On the climb screen, the current category also drives an animated corona gauge: an 8-segment ring drawn on a full-screen canvas, with a needle pointing at the active segment and the active segment highlighted in its category color. The gauge redraws whenever the category output changes.
+
+## Heart rate zones
+
+The climb screen (`t.html` / `t_p.html`) colours the heart icon by heart rate zone:
+
+| Zone | Meaning | Icon colour |
+| --- | --- | --- |
+| none | No heart rate yet, zone limits not available, or below a Zone 1 limit (when one is set) | White |
+| 1 | Zone 1 | Cyan `#36E4FF` |
+| 2 | Zone 2 | Green `#6EE76D` |
+| 3 | Zone 3 | Yellow `#FFDD33` |
+| 4 | Zone 4 | Orange `#FF9F33` |
+| 5 | Zone 5 | Red `#FF5640` |
+
+The Zone 1-5 colours are the ones the default Suunto heart rate zone gauge uses (`<import src="#zone-g" />`).
+
+The zone is worked out in the template, not in `main.js`, and none of the heart rate resources are manifest inputs. With the heart rate and zone limits declared as manifest inputs, the watch deactivated the whole app when no HR belt was paired (wrist HR). The likely cause is a manifest input the watch could not supply in that setup; a template subscription that never delivers just leaves its value empty.
+
+The limits are the user's zone limits, `Activity/Zones/Heartrate/ZoneN/Limit`. Each is the lower boundary of zone N; Zone 1 normally has none, so anything below the Zone 2 limit counts as Zone 1. If the Zone 2-5 limits are not all available the icon stays white.
+
+Heart rate and limits are normalised to bpm (anything under 10 is treated as Hz), so the comparison works whichever unit a value arrives in.
+
+The simulator defaults to Zone 2-5 limits of about 139, 149, 158 and 168 bpm. Behaviour on a watch, with an HR belt and with wrist HR, still needs confirming.
 
 ## Watch screens
 
@@ -141,7 +165,7 @@ There is currently no package manager configuration, build script, automated tes
 ## App metadata
 
 - **Name:** Velo Climb
-- **Version:** 1.2
+- **Version:** 1.3
 - **Type:** SuuntoPlus feature app
 - **Usage:** Workout
 - **Author:** Panagiotis Kritikakos
