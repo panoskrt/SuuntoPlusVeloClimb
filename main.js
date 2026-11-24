@@ -2,9 +2,11 @@
 // and barometer noise, so we freeze the gradient instead of letting it spike.
 var MIN_SPEED = 0.3; // m/s
 
-// EMA smoothing factor for the gradient: low enough to ride out barometer
-// noise, high enough to still react within a few seconds of a slope change.
-var GRADIENT_ALPHA = 0.2;
+// EMA smoothing factor for the gradient. Fusion/Altitude/VerticalSpeed is
+// already filtered by the watch, so this only needs to take the edge off
+// single-sample jitter. 0.4 reaches ~78% of a slope change in 3 s and ~92% in
+// 5 s (0.2 took ~10 s to reach 89%, which felt laggy on the bike).
+var GRADIENT_ALPHA = 0.4;
 
 // VAM is averaged over a rolling window instead of the whole session, so it
 // reflects current effort rather than a slow-moving all-ride average. Assumes

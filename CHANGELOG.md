@@ -2,6 +2,10 @@
 
 VeloClimb changes
 
+## 2026-11-24
+
+- Live gradient reacts faster to slope changes: its smoothing factor went from 0.2 to 0.4, so a change shows ~92% within 5 s instead of ~10 s. The watch's vertical speed is already filtered, so the extra smoothing was mostly adding lag.
+
 ## 2026-11-19
 
 - Heart icon zone colours now match the default Suunto heart rate zone gauge: cyan, green, yellow, orange, red for Zone 1-5 (was gray, blue, green, orange, red).
